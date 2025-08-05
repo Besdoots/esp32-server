@@ -4,17 +4,17 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return 'Server is running!'
+    return '✅ Server is running!'
 
 @app.route('/upload', methods=['POST'])
-def upload_audio():
+def upload():
     if request.data:
-        text = request.data.decode('utf-8')  # Giải mã bytes thành chuỗi
-        print("ESP32 gửi chuỗi:", text)
-        return jsonify({'message': 'Text received', 'data': text}), 200
+        try:
+            text = request.data.decode('utf-8')
+            print("📩 ESP32 gửi:", text)
+            return jsonify({'message': 'Text received', 'data': text}), 200
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
     else:
-        return jsonify({'error': 'No audio file or text received'}), 400
+        return jsonify({'error': 'No data received'}), 400
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
-S
