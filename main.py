@@ -17,4 +17,3 @@ def upload():
             return jsonify({'error': str(e)}), 500
     else:
         return jsonify({'error': 'No data received'}), 400
-
