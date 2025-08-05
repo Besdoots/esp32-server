@@ -1,16 +1,20 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-@app.route("/")
+@app.route('/')
 def home():
-    return "✅ ESP32 Voice Server đang chạy!"
+    return 'Server is running!'
 
-@app.route("/audio", methods=["POST"])
-def receive_audio():
-    audio_data = request.data
-    print(f"📥 Nhận được {len(audio_data)} byte từ ESP32")
-    return "✅ Đã nhận âm thanh!"
+@app.route('/upload', methods=['POST'])
+def upload_audio():
+    if 'audio' not in request.files:
+        return jsonify({'error': 'No audio file uploaded'}), 400
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    audio = request.files['audio']
+    audio.save('received_audio.wav')  # Lưu file nhận được
+
+    return jsonify({'message': 'Audio received successfully!'})
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
