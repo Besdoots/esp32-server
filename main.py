@@ -4,13 +4,17 @@ from datetime import datetime
 import wave
 import openai
 from gtts import gTTS
+from dotenv import load_dotenv
+
+# 🔐 Load biến môi trường từ file .env
+load_dotenv()
 
 app = Flask(__name__)
 
 UPLOAD_FOLDER = 'recordings'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# 👉 API key lấy từ biến môi trường để bảo mật
+# ✅ Lấy API key từ biến môi trường
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def save_raw_to_wav(raw_path, wav_path):
@@ -19,7 +23,7 @@ def save_raw_to_wav(raw_path, wav_path):
 
     with wave.open(wav_path, 'wb') as wav_file:
         wav_file.setnchannels(1)
-        wav_file.setsampwidth(2)
+        wav_file.setsampwidth(2)  # 16-bit
         wav_file.setframerate(8000)
         wav_file.writeframes(raw_data)
 
@@ -57,17 +61,23 @@ def receive_audio():
         f.write(raw_data)
 
     try:
+        # Chuyển sang WAV
         save_raw_to_wav(raw_path, wav_path)
+
+        # Nhận diện giọng nói
         text = transcribe_audio(wav_path)
-        print("🎤 Nội dung:", text)
+        print("📝 Văn bản:", text)
 
+        # ChatGPT trả lời
         reply = chatgpt_reply(text)
-        print("💬 Trả lời:", reply)
+        print("💬 Phản hồi:", reply)
 
+        # Chuyển sang tiếng nói
         tts = gTTS(reply, lang='vi')
         tts.save(mp3_path)
 
         return jsonify({"transcript": text, "reply": reply})
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -78,7 +88,6 @@ def send_tts_audio():
         key=lambda x: os.path.getmtime(os.path.join(UPLOAD_FOLDER, x)),
         reverse=True
     )
-
     if not files:
         return "❌ Không có file TTS!", 400
 
